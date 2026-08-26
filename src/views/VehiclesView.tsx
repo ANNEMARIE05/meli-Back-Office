@@ -162,6 +162,7 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
                       <td data-label="Véhicule" className="card-title-cell">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div
+                            className="row-avatar"
                             style={{
                               width: '40px',
                               height: '40px',

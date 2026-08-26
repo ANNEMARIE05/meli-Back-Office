@@ -35,7 +35,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onResetDemo }) => {
       <div className="grid-split-2-1">
         {/* Left: API Form */}
         <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+          <div className="section-card-head" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <Server size={20} color="var(--primary)" />
             <h3 style={{ fontSize: '1.05rem', color: 'var(--text-primary)' }}>
               Passerelle API WhatsGPS (Protocole GPS v1.4)
@@ -87,7 +87,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onResetDemo }) => {
         {/* Right: Data Management */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+            <div className="section-card-head" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
               <Database size={20} color="var(--warning)" />
               <h3 style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
                 Données de Démonstration
@@ -113,7 +113,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onResetDemo }) => {
           </div>
 
           <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+            <div className="section-card-head" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
               <Shield size={20} color="var(--success)" />
               <h3 style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
                 Version & Sécurité

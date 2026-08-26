@@ -204,7 +204,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid-split-2-1">
         {/* Left Column: Recent Fleet Activity */}
         <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="section-card-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', gap: '8px', flexWrap: 'wrap' }}>
             <div>
               <h3 style={{ fontSize: '1.05rem', color: 'var(--text-primary)' }}>
                 Télémétrie en Direct des Véhicules
@@ -277,7 +277,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Security Alerts Widget */}
           <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <div className="section-card-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <ShieldAlert size={18} color="var(--danger)" />
                 <h3 style={{ fontSize: '0.96rem', color: 'var(--text-primary)' }}>
@@ -293,6 +293,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {alarms.slice(0, 3).map((alarm) => (
                 <div
                   key={alarm.id}
+                  className="feed-item"
                   style={{
                     padding: '12px 4px',
                     borderBottom: '1px solid var(--border-subtle)',
@@ -311,7 +312,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* User Accounts Overview Widget */}
           <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <div className="section-card-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Building size={18} color="var(--primary)" />
                 <h3 style={{ fontSize: '0.96rem', color: 'var(--text-primary)' }}>
@@ -327,6 +328,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {users.slice(0, 4).map((u) => (
                 <div
                   key={u.id}
+                  className="feed-item"
                   style={{
                     display: 'flex',
                     alignItems: 'center',

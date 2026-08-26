@@ -198,6 +198,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                       <td data-label="Utilisateur" className="card-title-cell">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div
+                            className="row-avatar"
                             style={{
                               width: '40px',
                               height: '40px',

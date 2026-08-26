@@ -114,7 +114,7 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
       {/* Alarms List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {paginatedItems.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
+          <div className="card" style={{ textAlign: 'center', padding: '24px 16px', color: 'var(--text-muted)' }}>
             <CheckCircle size={36} color="var(--success)" style={{ margin: '0 auto 12px' }} />
             <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '4px' }}>
               Aucune alerte active à traiter
@@ -132,7 +132,6 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
               className="card alarm-item"
               onClick={() => setExpandedId(isExpanded ? null : alarm.id)}
               style={{
-                padding: '18px 20px',
                 borderLeft: `4px solid ${
                   alarm.severity === 'critical'
                     ? 'var(--danger)'
@@ -146,6 +145,7 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
             >
               <div className="alarm-item-main">
                 <div
+                  className="alarm-icon"
                   style={{
                     width: '42px',
                     height: '42px',

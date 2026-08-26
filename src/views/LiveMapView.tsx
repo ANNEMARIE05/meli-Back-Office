@@ -63,9 +63,18 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     window.addEventListener('resize', onResize);
     const timer = window.setTimeout(onResize, 250);
 
+    const observer =
+      mapContainerRef.current && typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(onResize)
+        : null;
+    if (observer && mapContainerRef.current) {
+      observer.observe(mapContainerRef.current);
+    }
+
     return () => {
       window.removeEventListener('resize', onResize);
       window.clearTimeout(timer);
+      observer?.disconnect();
       map.remove();
       mapInstanceRef.current = null;
     };
@@ -172,85 +181,64 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     <div className="live-map-wrapper">
       {/* Left Sidebar: Vehicle List & Telemetry details */}
       <div className="card live-map-sidebar">
-        {/* Title */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-          <div>
-            <h2 style={{ fontSize: '1.15rem', color: 'var(--text-primary)' }}>Flotte en direct</h2>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-              {vehicles.filter((v) => v.status === 'online').length} en mouvement sur {vehicles.length}
-            </p>
-          </div>
-          <button
-            onClick={handleCenterAll}
-            className="btn btn-secondary btn-icon"
-            title="Recadrer sur tous les véhicules"
-            style={{ height: '34px', width: '34px' }}
-          >
-            <Crosshair size={16} color="var(--primary)" />
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className="input-with-icon" style={{ marginBottom: '10px' }}>
-          <Search size={15} />
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Filtrer par plaque ou client..."
-            style={{ height: '34px', fontSize: '0.82rem' }}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        {/* Status quick tabs */}
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          {(['all', 'online', 'stopped', 'offline'] as const).map((st) => (
+        <div className="live-map-sidebar-header">
+          <div className="live-map-sidebar-title">
+            <div>
+              <h2>Flotte en direct</h2>
+              <p>
+                {vehicles.filter((v) => v.status === 'online').length} en mouvement sur {vehicles.length}
+              </p>
+            </div>
             <button
-              key={st}
-              onClick={() => setFilterStatus(st)}
-              style={{
-                flex: 1,
-                padding: '5px 2px',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.72rem',
-                fontWeight: 600,
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: filterStatus === st ? 'var(--primary)' : 'var(--bg-input)',
-                color: filterStatus === st ? '#FFF' : 'var(--text-secondary)',
-                transition: 'all var(--transition-fast)',
-              }}
+              onClick={handleCenterAll}
+              className="btn btn-secondary btn-icon"
+              title="Recadrer sur tous les véhicules"
             >
-              {st === 'all'
-                ? 'Tous'
-                : st === 'online'
-                ? 'En ligne'
-                : st === 'stopped'
-                ? 'À l’arrêt'
-                : 'Hors-ligne'}
+              <Crosshair size={16} color="var(--primary)" />
             </button>
-          ))}
+          </div>
+
+          <div className="input-with-icon live-map-search">
+            <Search size={15} />
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Filtrer par plaque ou client..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div className="live-map-status-tabs">
+            {(['all', 'online', 'stopped', 'offline'] as const).map((st) => (
+              <button
+                key={st}
+                type="button"
+                onClick={() => setFilterStatus(st)}
+                className={`live-map-status-tab ${filterStatus === st ? 'is-active' : ''}`}
+              >
+                {st === 'all'
+                  ? 'Tous'
+                  : st === 'online'
+                  ? 'En ligne'
+                  : st === 'stopped'
+                  ? 'À l’arrêt'
+                  : 'Hors-ligne'}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Vehicle list */}
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="live-map-list">
           {filteredVehicles.map((v) => {
             const isSelected = selectedVehicle?.id === v.id;
             return (
               <div
                 key={v.id}
+                className={`live-map-vehicle-item ${isSelected ? 'is-selected' : ''}`}
                 onClick={() => onSelectVehicle(v)}
-                style={{
-                  padding: '14px 16px',
-                  borderRadius: '12px',
-                  backgroundColor: isSelected ? 'var(--bg-card-hover)' : 'var(--bg-input)',
-                  border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-subtle)'}`,
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-fast)',
-                }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                <div className="live-map-vehicle-row">
                   <div style={{ minWidth: 0 }}>
                     <div className="row-title">{v.plate}</div>
                     <div className="row-subtitle">{v.name} · {v.ownerName}</div>
@@ -273,29 +261,20 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           })}
         </div>
 
-        {/* Bottom Details Drawer for Selected Vehicle */}
         {selectedVehicle && (
-          <div
-            style={{
-              marginTop: '12px',
-              paddingTop: '12px',
-              borderTop: '1px solid var(--border-color)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--primary)' }}>
-                Télémétrie en direct
-              </span>
+          <div className="live-map-telemetry">
+            <div className="live-map-telemetry-head">
+              <span>Télémétrie en direct</span>
               <button
+                type="button"
                 onClick={() => onSelectVehicle(null)}
                 className="btn-ghost"
-                style={{ fontSize: '0.7rem', padding: '2px 6px', border: 'none', cursor: 'pointer' }}
               >
                 Fermer
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.84rem' }}>
+            <div className="live-map-telemetry-grid">
               <div>
                 <div className="detail-field-label">Contact moteur</div>
                 <div style={{ fontWeight: 600, color: selectedVehicle.engineOn ? 'var(--success)' : 'var(--danger)' }}>
@@ -320,12 +299,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 <div style={{ fontWeight: 600 }}>{selectedVehicle.fuelLevel ?? 80}%</div>
               </div>
             </div>
-            <div style={{ marginTop: '14px' }}>
+            <div className="live-map-telemetry-position">
               <div className="detail-field-label">Position</div>
-              <div style={{ fontSize: '0.86rem', lineHeight: 1.45 }}>{selectedVehicle.address}</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                {selectedVehicle.lastUpdate}
-              </div>
+              <div className="live-map-telemetry-address">{selectedVehicle.address}</div>
+              <div className="live-map-telemetry-update">{selectedVehicle.lastUpdate}</div>
             </div>
           </div>
         )}
