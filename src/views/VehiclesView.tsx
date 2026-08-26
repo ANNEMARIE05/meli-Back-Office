@@ -142,7 +142,7 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
               filteredVehicles.map((v) => (
                 <tr key={v.id}>
                   {/* Vehicle info */}
-                  <td>
+                  <td data-label="Véhicule" className="card-title-cell">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div
                         style={{
@@ -171,7 +171,7 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
                   </td>
 
                   {/* GPS Tracker IMEI */}
-                  <td>
+                  <td data-label="Balise GPS">
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <span
                         style={{
@@ -193,7 +193,7 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
                   </td>
 
                   {/* Owner / Client */}
-                  <td>
+                  <td data-label="Client">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <User size={13} color="var(--text-muted)" />
                       <span style={{ fontSize: '0.84rem', fontWeight: 500, color: 'var(--text-primary)' }}>
@@ -203,7 +203,7 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
                   </td>
 
                   {/* Status & Speed */}
-                  <td>
+                  <td data-label="Statut">
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <span
                         className={`badge ${
@@ -228,7 +228,7 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
                   </td>
 
                   {/* Telemetry Sensors */}
-                  <td>
+                  <td data-label="Capteurs">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.78rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)' }}>
                         <Battery size={14} color="var(--success)" />
@@ -242,8 +242,8 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
                   </td>
 
                   {/* Last Position */}
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxWidth: '200px' }}>
+                  <td data-label="Position">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxWidth: '100%', minWidth: 0 }}>
                       <div style={{ fontSize: '0.78rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {v.address}
                       </div>
@@ -255,7 +255,7 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
                   </td>
 
                   {/* Actions */}
-                  <td style={{ textAlign: 'right' }}>
+                  <td data-label="Actions" style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
                       <button
                         onClick={() => onLocateOnMap(v)}

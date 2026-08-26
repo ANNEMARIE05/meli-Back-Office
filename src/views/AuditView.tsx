@@ -116,14 +116,14 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
                 const Icon = cat.icon;
                 return (
                   <tr key={log.id}>
-                    <td>
+                    <td data-label="Date">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600 }}>
                         <Clock size={13} color="var(--text-muted)" />
                         <span>{new Date(log.timestamp).toLocaleString('fr-FR')}</span>
                       </div>
                     </td>
 
-                    <td>
+                    <td data-label="Catégorie">
                       <span
                         style={{
                           display: 'inline-flex',
@@ -142,7 +142,7 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
                       </span>
                     </td>
 
-                    <td>
+                    <td data-label="Action">
                       <span
                         style={{
                           fontFamily: 'monospace',
@@ -152,25 +152,26 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
                           backgroundColor: 'var(--bg-input)',
                           padding: '2px 6px',
                           borderRadius: 'var(--radius-sm)',
+                          wordBreak: 'break-all',
                         }}
                       >
                         {log.action}
                       </span>
                     </td>
 
-                    <td>
+                    <td data-label="Détails">
                       <div style={{ fontSize: '0.84rem', color: 'var(--text-primary)' }}>
                         {log.details}
                       </div>
                     </td>
 
-                    <td>
+                    <td data-label="Auteur">
                       <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                         {log.authorName}
                       </div>
                     </td>
 
-                    <td>
+                    <td data-label="Origine">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.76rem', color: 'var(--text-muted)' }}>
                         <Laptop size={12} />
                         <span>{log.ipAddress}</span>

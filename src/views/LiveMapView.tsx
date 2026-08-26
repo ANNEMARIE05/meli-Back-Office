@@ -58,7 +58,15 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
     mapInstanceRef.current = map;
 
+    const onResize = () => {
+      map.invalidateSize();
+    };
+    window.addEventListener('resize', onResize);
+    const timer = window.setTimeout(onResize, 250);
+
     return () => {
+      window.removeEventListener('resize', onResize);
+      window.clearTimeout(timer);
       map.remove();
       mapInstanceRef.current = null;
     };
@@ -197,7 +205,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         </div>
 
         {/* Status quick tabs */}
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {(['all', 'online', 'stopped', 'offline'] as const).map((st) => (
             <button
               key={st}

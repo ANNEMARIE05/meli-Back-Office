@@ -182,7 +182,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
               filteredUsers.map((u) => (
                 <tr key={u.id}>
                   {/* User Full Name & ID */}
-                  <td>
+                  <td data-label="Utilisateur" className="card-title-cell">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div
                         style={{
@@ -211,7 +211,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                   </td>
 
                   {/* Username (login) */}
-                  <td>
+                  <td data-label="Identifiant">
                     <span
                       style={{
                         fontFamily: 'monospace',
@@ -229,7 +229,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                   </td>
 
                   {/* Role Badge */}
-                  <td>
+                  <td data-label="Rôle">
                     {u.role === 'OWNER' ? (
                       <span className="badge badge-primary">
                         <Building size={11} />
@@ -248,7 +248,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                   </td>
 
                   {/* Contacts */}
-                  <td>
+                  <td data-label="Contacts">
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '0.78rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-secondary)' }}>
                         <Phone size={12} color="var(--text-muted)" />
@@ -262,7 +262,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                   </td>
 
                   {/* Rattachement / Vehicles */}
-                  <td>
+                  <td data-label="Rattachement">
                     {u.role === 'OWNER' ? (
                       <button
                         onClick={() => onViewUserVehicles(u.id)}
@@ -288,7 +288,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                   </td>
 
                   {/* Status */}
-                  <td>
+                  <td data-label="Statut">
                     <span
                       className={`badge ${
                         u.status === 'active'
@@ -304,7 +304,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                   </td>
 
                   {/* Actions */}
-                  <td style={{ textAlign: 'right' }}>
+                  <td data-label="Actions" style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
                       <button
                         onClick={() => onResetPassword(u)}

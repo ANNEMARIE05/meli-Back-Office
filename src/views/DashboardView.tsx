@@ -76,8 +76,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <Users size={18} />
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <span style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+            <span className="kpi-value">
               {stats.totalUsers}
             </span>
             <span style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 700 }}>
@@ -111,8 +111,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <Car size={18} />
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <span style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+            <span className="kpi-value">
               {stats.totalVehicles}
             </span>
             <span style={{ fontSize: '0.78rem', color: 'var(--success)', fontWeight: 700 }}>
@@ -145,11 +145,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <Bell size={18} />
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
             <span
+              className="kpi-value"
               style={{
-                fontSize: '1.8rem',
-                fontWeight: 800,
                 color: stats.activeAlarmsCount > 0 ? 'var(--danger)' : 'var(--text-primary)',
               }}
             >
@@ -183,8 +182,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <CheckCircle2 size={18} />
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <span style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+            <span className="kpi-value">
               100%
             </span>
             <span style={{ fontSize: '0.78rem', color: 'var(--success)', fontWeight: 700 }}>
@@ -201,7 +200,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid-split-2-1">
         {/* Left Column: Recent Fleet Activity */}
         <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', gap: '8px', flexWrap: 'wrap' }}>
             <div>
               <h3 style={{ fontSize: '1.05rem', color: 'var(--text-primary)' }}>
                 Télémétrie en Direct des Véhicules
@@ -231,19 +230,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <tbody>
                 {vehicles.slice(0, 5).map((v) => (
                   <tr key={v.id}>
-                    <td>
+                    <td data-label="Véhicule" className="card-title-cell">
                       <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{v.plate}</div>
                       <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>{v.name}</div>
                     </td>
-                    <td>
+                    <td data-label="Propriétaire">
                       <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>{v.ownerName}</div>
                     </td>
-                    <td>
+                    <td data-label="Chauffeur">
                       <div style={{ fontSize: '0.82rem', color: 'var(--primary)', fontWeight: 600 }}>
                         {v.driverName || 'Non assigné'}
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Statut">
                       <span
                         className={`badge ${
                           v.status === 'online'
@@ -261,12 +260,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           : 'Hors-ligne'}
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Vitesse">
                       <div style={{ fontWeight: 700, color: v.speed > 0 ? 'var(--primary)' : 'var(--text-muted)' }}>
                         {v.speed} km/h
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Action">
                       <button
                         onClick={() => {
                           onSelectVehicleOnMap(v);

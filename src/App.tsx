@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Sidebar, type ActiveTab } from './components/Sidebar';
 import { Header } from './components/Header';
+import { MobileTabBar } from './components/MobileTabBar';
 import { UserModal } from './components/UserModal';
 import { VehicleModal } from './components/VehicleModal';
 import { ResetPasswordModal } from './components/ResetPasswordModal';
+import { useIsMobile } from './hooks/useIsMobile';
 
 import { DashboardView } from './views/DashboardView';
 import { UsersView } from './views/UsersView';
@@ -16,6 +18,16 @@ import { LoginView } from './views/LoginView';
 
 import { apiService } from './services/api';
 import type { UserAccount, Vehicle, AlarmItem, AuditLog, FleetStats } from './services/types';
+
+const PAGE_TITLES: Record<ActiveTab, string> = {
+  dashboard: 'Tableau de bord',
+  users: 'Utilisateurs',
+  vehicles: 'Flotte',
+  'live-map': 'Carte en direct',
+  alarms: 'Alertes',
+  audit: 'Audit',
+  settings: 'Paramètres',
+};
 
 export const App: React.FC = () => {
   // --- AUTHENTICATION STATE ---
@@ -31,6 +43,7 @@ export const App: React.FC = () => {
     return localStorage.getItem('meli_sidebar_collapsed') === 'true';
   });
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
+  const isMobile = useIsMobile();
 
   // --- NAVIGATION TAB ---
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -65,10 +78,17 @@ export const App: React.FC = () => {
 
   const [resetPwInfo, setResetPwInfo] = useState<{ userName: string; password: string } | null>(null);
 
-  // Apply Theme Attribute
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    document.body.style.overflow = isMobileSidebarOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobile, isMobileSidebarOpen]);
 
   // Load Data from API Service
   const loadData = useCallback(() => {
@@ -215,7 +235,7 @@ export const App: React.FC = () => {
   const existingOwners = users.filter((u) => u.role === 'OWNER');
 
   return (
-    <div className={`app-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+    <div className={`app-container ${!isMobile && isSidebarCollapsed ? 'sidebar-collapsed' : ''} ${isMobile ? 'is-mobile' : ''}`}>
       {/* Left Sidebar (Desktop Fixed & Mobile Drawer) */}
       <Sidebar
         activeTab={activeTab}
@@ -228,7 +248,7 @@ export const App: React.FC = () => {
         alarmsCount={stats.activeAlarmsCount}
         onlineVehiclesCount={stats.onlineVehicles}
         onLogout={handleLogout}
-        isCollapsed={isSidebarCollapsed}
+        isCollapsed={isMobile ? false : isSidebarCollapsed}
         onToggleCollapse={toggleSidebar}
         isMobileOpen={isMobileSidebarOpen}
         onMobileClose={() => setIsMobileSidebarOpen(false)}
@@ -252,10 +272,11 @@ export const App: React.FC = () => {
           alarmsCount={stats.activeAlarmsCount}
           onNavigateToAlarms={() => setActiveTab('alarms')}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
+          pageTitle={PAGE_TITLES[activeTab]}
         />
 
         {/* Dynamic Views */}
-        <main className="page-wrapper">
+        <main className={`page-wrapper ${activeTab === 'live-map' ? 'page-wrapper-map' : ''}`}>
           {activeTab === 'dashboard' && (
             <DashboardView
               stats={stats}
@@ -328,6 +349,21 @@ export const App: React.FC = () => {
             <SettingsView onResetDemo={handleResetDemoData} />
           )}
         </main>
+
+        {isMobile && (
+          <MobileTabBar
+            activeTab={activeTab}
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              if (tab !== 'vehicles') {
+                setUserVehiclesFilter(null);
+              }
+              setIsMobileSidebarOpen(false);
+            }}
+            onOpenMenu={() => setIsMobileSidebarOpen((prev) => !prev)}
+            alarmsCount={stats.activeAlarmsCount}
+          />
+        )}
       </div>
 
       {/* --- POPUP MODALS --- */}

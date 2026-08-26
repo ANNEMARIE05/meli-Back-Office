@@ -25,7 +25,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onResetDemo }) => {
 
   return (
     <div>
-      <div style={{ marginBottom: '24px' }}>
+      <div className="desktop-page-intro" style={{ marginBottom: '24px' }}>
         <h1 className="page-title">Paramètres & Configuration Système</h1>
         <p className="page-subtitle">
           Gestion des passerelles API WhatsGPS, des clés d'accès et des données système.

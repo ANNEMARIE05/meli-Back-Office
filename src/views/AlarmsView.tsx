@@ -95,11 +95,8 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
           filteredAlarms.map((alarm) => (
             <div
               key={alarm.id}
-              className="card"
+              className="card alarm-item"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
                 padding: '16px 20px',
                 borderLeft: `4px solid ${
                   alarm.severity === 'critical'
@@ -111,7 +108,7 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
                 opacity: alarm.acknowledged ? 0.6 : 1,
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div className="alarm-item-main">
                 <div
                   style={{
                     width: '42px',
@@ -122,7 +119,7 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
                         ? 'var(--danger-light)'
                         : alarm.severity === 'warning'
                         ? 'var(--warning-light)'
-                        : 'var(--primary-light)',
+                        : 'var(--primary-soft)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -143,8 +140,8 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
                   )}
                 </div>
 
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px', flexWrap: 'wrap' }}>
                     <h4 style={{ fontSize: '0.96rem', color: 'var(--text-primary)' }}>
                       {alarm.title}
                     </h4>
@@ -166,7 +163,7 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
                     {alarm.description}
                   </p>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.74rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <User size={12} />
                       <span>{alarm.ownerName}</span>

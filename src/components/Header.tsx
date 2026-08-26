@@ -10,6 +10,7 @@ interface HeaderProps {
   alarmsCount: number;
   onNavigateToAlarms: () => void;
   onToggleMobileSidebar?: () => void;
+  pageTitle?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,21 +22,22 @@ export const Header: React.FC<HeaderProps> = ({
   alarmsCount,
   onNavigateToAlarms,
   onToggleMobileSidebar,
+  pageTitle = 'Meli Fleet',
 }) => {
   return (
     <header className="app-header">
-      {/* Left side: Hamburger button (MOBILE ONLY) & Global Search Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+      <div className="header-left">
         {onToggleMobileSidebar && (
           <button
             onClick={onToggleMobileSidebar}
             className="btn btn-secondary btn-icon mobile-menu-toggle"
             title="Ouvrir le menu"
-            style={{ height: '38px', width: '38px', borderRadius: 'var(--radius-md)', flexShrink: 0 }}
           >
             <Menu size={19} />
           </button>
         )}
+
+        <h1 className="header-page-title">{pageTitle}</h1>
 
         <div className="header-search-container">
           <div className="input-with-icon">
@@ -50,12 +52,10 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Action Controls */}
       <div className="header-actions">
-        {/* Quick Add Buttons */}
         <button
           onClick={onOpenNewUser}
-          className="btn btn-primary"
+          className="btn btn-primary header-quick-add"
           title="Nouveau Client"
           style={{ height: '38px', fontSize: '0.82rem', padding: '0 12px' }}
         >
@@ -65,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={onOpenNewVehicle}
-          className="btn btn-secondary"
+          className="btn btn-secondary header-quick-add"
           title="Associer Balise"
           style={{ height: '38px', fontSize: '0.82rem', padding: '0 12px' }}
         >
@@ -73,56 +73,32 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="header-btn-text">Associer Balise</span>
         </button>
 
-        <div style={{ width: '1px', height: '22px', backgroundColor: 'var(--border-color)', margin: '0 2px' }} />
+        <div className="header-actions-divider" />
 
-        {/* Refresh button */}
         <button
           onClick={onRefreshData}
-          className="btn btn-secondary btn-icon"
+          className="btn btn-secondary btn-icon header-refresh-btn"
           title="Actualiser les données"
-          style={{ height: '38px', width: '38px', flexShrink: 0 }}
         >
           <RefreshCw size={16} />
         </button>
 
-        {/* Notifications */}
         <button
           onClick={onNavigateToAlarms}
           className="btn btn-secondary btn-icon"
           title={`${alarmsCount} alertes actives`}
-          style={{ position: 'relative', height: '38px', width: '38px', flexShrink: 0 }}
+          style={{ position: 'relative' }}
         >
           <Bell size={16} />
           {alarmsCount > 0 && (
-            <span
-              style={{
-                position: 'absolute',
-                top: '-4px',
-                right: '-4px',
-                backgroundColor: 'var(--danger)',
-                color: '#FFF',
-                fontSize: '0.65rem',
-                fontWeight: 700,
-                width: '18px',
-                height: '18px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '2px solid var(--bg-card)',
-              }}
-            >
-              {alarmsCount}
-            </span>
+            <span className="header-alarm-count">{alarmsCount}</span>
           )}
         </button>
 
-        {/* Theme Toggle */}
         <button
           onClick={onToggleTheme}
           className="btn btn-secondary btn-icon"
           title={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
-          style={{ height: '38px', width: '38px', flexShrink: 0 }}
         >
           {theme === 'dark' ? <Sun size={16} color="#FBBF24" /> : <Moon size={16} color="#64748B" />}
         </button>
