@@ -94,7 +94,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="modal-header-info" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div
               style={{
                 width: '36px',
@@ -105,26 +105,27 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'var(--success)',
+                flexShrink: 0,
               }}
             >
               <Car size={18} />
             </div>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+            <div style={{ minWidth: 0 }}>
+              <h3>
                 {isEditing ? 'Modifier le véhicule / balise' : 'Enregistrer un nouveau véhicule'}
               </h3>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+              <p>
                 Affectez un traceur GPS et assignez le véhicule à un client
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="btn-ghost btn-icon" style={{ border: 'none', cursor: 'pointer' }}>
+          <button onClick={onClose} className="btn-ghost btn-icon" style={{ border: 'none', cursor: 'pointer', flexShrink: 0 }}>
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="modal-form">
           <div className="modal-body">
             <div className="form-grid-2">
               <div className="form-group">

@@ -83,7 +83,7 @@ export const UserModal: React.FC<UserModalProps> = ({
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="modal-header-info" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div
               style={{
                 width: '36px',
@@ -94,28 +94,29 @@ export const UserModal: React.FC<UserModalProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'var(--primary)',
+                flexShrink: 0,
               }}
             >
               {isEditing ? <User size={18} /> : <UserPlus size={18} />}
             </div>
-            <div>
-              <h3 style={{ fontSize: '1.05rem', color: 'var(--text-primary)', fontWeight: 700 }}>
+            <div style={{ minWidth: 0 }}>
+              <h3>
                 {isEditing ? 'Modifier le compte' : 'Créer un nouveau compte utilisateur'}
               </h3>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+              <p>
                 {isEditing
                   ? `Identifiant de connexion : ${userToEdit.userName}`
                   : 'Sélectionnez le type de compte (Propriétaire ou Chauffeur)'}
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="btn-ghost btn-icon" style={{ border: 'none', cursor: 'pointer' }}>
+          <button onClick={onClose} className="btn-ghost btn-icon" style={{ border: 'none', cursor: 'pointer', flexShrink: 0 }}>
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="modal-form">
           <div className="modal-body">
             {/* ROLE SELECTOR CARDS */}
             {!isEditing && (
@@ -123,7 +124,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                 <label className="form-label" style={{ marginBottom: '8px' }}>
                   TYPE DE COMPTE À CRÉER *
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div className="role-picker-grid">
                   {/* Card 1: Owner */}
                   <div
                     onClick={() => setFormData({ ...formData, role: 'OWNER' })}

@@ -5,13 +5,15 @@ import {
   Edit2,
   Trash2,
   KeyRound,
-  Phone,
-  Mail,
   Car,
   Building,
   User,
+  ChevronDown,
 } from 'lucide-react';
 import type { UserAccount, UserRole, UserStatus } from '../services/types';
+import { Pagination } from '../components/Pagination';
+import { usePagination } from '../hooks/usePagination';
+import { RowDetails, DetailField } from '../components/RowDetails';
 
 interface UsersViewProps {
   users: UserAccount[];
@@ -33,6 +35,8 @@ export const UsersView: React.FC<UsersViewProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | UserStatus>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
+  const [pageSize, setPageSize] = useState(5);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
@@ -50,6 +54,11 @@ export const UsersView: React.FC<UsersViewProps> = ({
       return matchSearch && matchStatus && matchRole;
     });
   }, [users, searchTerm, statusFilter, roleFilter]);
+
+  const { paginatedItems, page, setPage, totalPages, totalItems, from, to } = usePagination(
+    filteredUsers,
+    pageSize
+  );
 
   const ownersCount = users.filter((u) => u.role === 'OWNER').length;
   const driversCount = users.filter((u) => u.role === 'DRIVER').length;
@@ -127,7 +136,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="card" style={{ marginBottom: '20px', padding: '16px 20px' }}>
+      <div className="card filters-bar">
         <div className="grid-filters-2">
           {/* Search Box */}
           <div className="input-with-icon">
@@ -135,7 +144,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
             <input
               type="text"
               className="form-input"
-              placeholder="Rechercher par nom, identifiant, téléphone, email, société ou véhicule..."
+              placeholder="Nom, identifiant, téléphone, email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -163,187 +172,180 @@ export const UsersView: React.FC<UsersViewProps> = ({
           <thead>
             <tr>
               <th>Utilisateur</th>
-              <th>Identifiant</th>
-              <th>Type de Rôle</th>
-              <th>Contacts</th>
-              <th>Rattachement / Véhicule</th>
+              <th className="col-optional">Rôle</th>
               <th>Statut</th>
               <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.length === 0 ? (
+            {paginatedItems.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                <td colSpan={4} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                   Aucun compte trouvé.
                 </td>
               </tr>
             ) : (
-              filteredUsers.map((u) => (
-                <tr key={u.id}>
-                  {/* User Full Name & ID */}
-                  <td data-label="Utilisateur" className="card-title-cell">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div
-                        style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: 'var(--radius-sm)',
-                          backgroundColor: u.role === 'OWNER' ? 'var(--primary-soft)' : u.role === 'DRIVER' ? 'var(--info-light)' : 'var(--bg-input)',
-                          border: `1px solid ${u.role === 'OWNER' ? 'var(--primary)' : 'var(--border-color)'}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: u.role === 'OWNER' ? 'var(--primary)' : 'var(--text-primary)',
-                          fontWeight: 800,
-                          fontSize: '0.85rem',
-                        }}
-                      >
-                        {u.role === 'OWNER' ? <Building size={16} /> : u.role === 'DRIVER' ? <Car size={16} /> : <User size={16} />}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{u.name}</div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                          ID: #{u.id} • Créé le {new Date(u.createdAt).toLocaleDateString('fr-FR')}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Username (login) */}
-                  <td data-label="Identifiant">
-                    <span
-                      style={{
-                        fontFamily: 'monospace',
-                        fontSize: '0.82rem',
-                        fontWeight: 600,
-                        backgroundColor: 'var(--bg-input)',
-                        padding: '3px 8px',
-                        borderRadius: 'var(--radius-sm)',
-                        border: '1px solid var(--border-color)',
-                        color: 'var(--text-primary)',
-                      }}
+              paginatedItems.map((u) => {
+                const isExpanded = expandedId === u.id;
+                const roleLabel =
+                  u.role === 'OWNER' ? 'Propriétaire' : u.role === 'DRIVER' ? 'Chauffeur' : 'Admin';
+                return (
+                  <React.Fragment key={u.id}>
+                    <tr
+                      className={`data-row ${isExpanded ? 'is-expanded' : ''}`}
+                      onClick={() => setExpandedId(isExpanded ? null : u.id)}
                     >
-                      {u.userName}
-                    </span>
-                  </td>
-
-                  {/* Role Badge */}
-                  <td data-label="Rôle">
-                    {u.role === 'OWNER' ? (
-                      <span className="badge badge-primary">
-                        <Building size={11} />
-                        <span>Propriétaire Flotte</span>
-                      </span>
-                    ) : u.role === 'DRIVER' ? (
-                      <span className="badge" style={{ backgroundColor: 'var(--info-light)', color: 'var(--info)' }}>
-                        <Car size={11} />
-                        <span>Chauffeur</span>
-                      </span>
-                    ) : (
-                      <span className="badge badge-offline">
-                        <span>Admin</span>
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Contacts */}
-                  <td data-label="Contacts">
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '0.78rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-secondary)' }}>
-                        <Phone size={12} color="var(--text-muted)" />
-                        <span>{u.phone}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-secondary)' }}>
-                        <Mail size={12} color="var(--text-muted)" />
-                        <span>{u.email}</span>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Rattachement / Vehicles */}
-                  <td data-label="Rattachement">
-                    {u.role === 'OWNER' ? (
-                      <button
-                        onClick={() => onViewUserVehicles(u.id)}
-                        className="btn btn-secondary"
-                        style={{ padding: '4px 10px', fontSize: '0.76rem', height: '28px' }}
-                        title="Voir les véhicules de ce propriétaire"
-                      >
-                        <Car size={13} color="var(--primary)" />
-                        <span>{u.assignedVehiclesCount} véhicule(s)</span>
-                      </button>
-                    ) : u.role === 'DRIVER' ? (
-                      <div style={{ fontSize: '0.78rem' }}>
-                        <div style={{ fontWeight: 600, color: 'var(--primary)' }}>
-                          Véhicule : {u.assignedVehiclePlate || 'Non assigné'}
+                      <td data-label="Utilisateur" className="card-title-cell">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '10px',
+                              backgroundColor:
+                                u.role === 'OWNER'
+                                  ? 'var(--primary-soft)'
+                                  : u.role === 'DRIVER'
+                                  ? 'var(--info-light)'
+                                  : 'var(--bg-input)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: u.role === 'OWNER' ? 'var(--primary)' : 'var(--text-primary)',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {u.role === 'OWNER' ? (
+                              <Building size={18} />
+                            ) : u.role === 'DRIVER' ? (
+                              <Car size={18} />
+                            ) : (
+                              <User size={18} />
+                            )}
+                          </div>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div className="row-title">{u.name}</div>
+                            <div className="row-subtitle">{roleLabel}</div>
+                          </div>
+                          <ChevronDown size={18} className="row-chevron" />
                         </div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
-                          Employeur : {u.employerName || u.company || 'N/A'}
-                        </div>
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Système Meli</span>
-                    )}
-                  </td>
+                      </td>
 
-                  {/* Status */}
-                  <td data-label="Statut">
-                    <span
-                      className={`badge ${
-                        u.status === 'active'
-                          ? 'badge-success'
-                          : u.status === 'suspended'
-                          ? 'badge-danger'
-                          : 'badge-warning'
-                      }`}
-                    >
-                      <span className="badge-dot" />
-                      {u.status === 'active' ? 'Actif' : u.status === 'suspended' ? 'Suspendu' : 'En attente'}
-                    </span>
-                  </td>
+                      <td data-label="Rôle" className="col-optional">
+                        {u.role === 'OWNER' ? (
+                          <span className="badge badge-primary">Propriétaire</span>
+                        ) : u.role === 'DRIVER' ? (
+                          <span className="badge" style={{ backgroundColor: 'var(--info-light)', color: 'var(--info)' }}>
+                            Chauffeur
+                          </span>
+                        ) : (
+                          <span className="badge badge-offline">Admin</span>
+                        )}
+                      </td>
 
-                  {/* Actions */}
-                  <td data-label="Actions" style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
-                      <button
-                        onClick={() => onResetPassword(u)}
-                        className="btn btn-secondary btn-icon"
-                        title="Réinitialiser le mot de passe"
-                        style={{ height: '32px', width: '32px' }}
-                      >
-                        <KeyRound size={14} color="var(--warning)" />
-                      </button>
-                      <button
-                        onClick={() => onEditUser(u)}
-                        className="btn btn-secondary btn-icon"
-                        title="Modifier les informations"
-                        style={{ height: '32px', width: '32px' }}
-                      >
-                        <Edit2 size={14} color="var(--primary)" />
-                      </button>
-                      {u.role !== 'ADMIN' && (
-                        <button
-                          onClick={() => {
-                            if (window.confirm(`Supprimer le compte de ${u.name} ?`)) {
-                              onDeleteUser(u.id);
-                            }
-                          }}
-                          className="btn btn-danger btn-icon"
-                          title="Supprimer le compte"
-                          style={{ height: '32px', width: '32px' }}
+                      <td data-label="Statut" className="col-status">
+                        <span
+                          className={`badge ${
+                            u.status === 'active'
+                              ? 'badge-success'
+                              : u.status === 'suspended'
+                              ? 'badge-danger'
+                              : 'badge-warning'
+                          }`}
                         >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
+                          <span className="badge-dot" />
+                          {u.status === 'active' ? 'Actif' : u.status === 'suspended' ? 'Suspendu' : 'En attente'}
+                        </span>
+                      </td>
+
+                      <td data-label="Actions" style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                        <div className="list-actions">
+                          <button
+                            onClick={() => onResetPassword(u)}
+                            className="btn btn-secondary btn-icon"
+                            title="Réinitialiser le mot de passe"
+                            style={{ height: '36px', width: '36px' }}
+                          >
+                            <KeyRound size={15} color="var(--warning)" />
+                          </button>
+                          <button
+                            onClick={() => onEditUser(u)}
+                            className="btn btn-secondary btn-icon"
+                            title="Modifier les informations"
+                            style={{ height: '36px', width: '36px' }}
+                          >
+                            <Edit2 size={15} color="var(--primary)" />
+                          </button>
+                          {u.role !== 'ADMIN' && (
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Supprimer le compte de ${u.name} ?`)) {
+                                  onDeleteUser(u.id);
+                                }
+                              }}
+                              className="btn btn-danger btn-icon"
+                              title="Supprimer le compte"
+                              style={{ height: '36px', width: '36px' }}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <RowDetails colSpan={4}>
+                        <DetailField label="Identifiant">{u.userName}</DetailField>
+                        <DetailField label="Téléphone">{u.phone}</DetailField>
+                        <DetailField label="Email">{u.email}</DetailField>
+                        {u.role === 'OWNER' ? (
+                          <DetailField label="Flotte">
+                            <button
+                              onClick={() => onViewUserVehicles(u.id)}
+                              className="btn-ghost"
+                              style={{
+                                fontSize: '0.88rem',
+                                padding: 0,
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: 'var(--primary)',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {u.assignedVehiclesCount} véhicule(s)
+                            </button>
+                          </DetailField>
+                        ) : u.role === 'DRIVER' ? (
+                          <>
+                            <DetailField label="Véhicule">{u.assignedVehiclePlate || 'Non assigné'}</DetailField>
+                            <DetailField label="Employeur">{u.employerName || u.company || 'N/A'}</DetailField>
+                          </>
+                        ) : (
+                          <DetailField label="Rattachement">Système Meli</DetailField>
+                        )}
+                        <DetailField label="Créé le">
+                          {new Date(u.createdAt).toLocaleDateString('fr-FR')}
+                        </DetailField>
+                      </RowDetails>
+                    )}
+                  </React.Fragment>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        from={from}
+        to={to}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
     </div>
   );
 };

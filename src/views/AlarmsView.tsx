@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ShieldAlert,
@@ -6,8 +6,12 @@ import {
   CheckCircle,
   Clock,
   User,
+  Search,
+  ChevronDown,
 } from 'lucide-react';
 import type { AlarmItem, AlarmSeverity } from '../services/types';
+import { Pagination } from '../components/Pagination';
+import { usePagination } from '../hooks/usePagination';
 
 interface AlarmsViewProps {
   alarms: AlarmItem[];
@@ -18,14 +22,30 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
   alarms,
   onAcknowledgeAlarm,
 }) => {
+  const [searchTerm, setSearchTerm] = useState('');
   const [severityFilter, setSeverityFilter] = useState<'all' | AlarmSeverity>('all');
   const [showAcknowledged, setShowAcknowledged] = useState(false);
+  const [pageSize, setPageSize] = useState(5);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  const filteredAlarms = alarms.filter((a) => {
-    const matchSeverity = severityFilter === 'all' || a.severity === severityFilter;
-    const matchAck = showAcknowledged ? true : !a.acknowledged;
-    return matchSeverity && matchAck;
-  });
+  const filteredAlarms = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return alarms.filter((a) => {
+      const matchSearch =
+        a.title.toLowerCase().includes(term) ||
+        a.description.toLowerCase().includes(term) ||
+        a.vehiclePlate.toLowerCase().includes(term) ||
+        a.ownerName.toLowerCase().includes(term);
+      const matchSeverity = severityFilter === 'all' || a.severity === severityFilter;
+      const matchAck = showAcknowledged ? true : !a.acknowledged;
+      return matchSearch && matchSeverity && matchAck;
+    });
+  }, [alarms, searchTerm, severityFilter, showAcknowledged]);
+
+  const { paginatedItems, page, setPage, totalPages, totalItems, from, to } = usePagination(
+    filteredAlarms,
+    pageSize
+  );
 
   return (
     <div>
@@ -40,8 +60,19 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
       </div>
 
       {/* Filter Bar */}
-      <div className="card" style={{ marginBottom: '20px', padding: '16px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+      <div className="card filters-bar">
+        <div className="alarms-filters">
+          <div className="input-with-icon">
+            <Search size={16} />
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Titre, plaque, client..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
           <div className="quick-filter-tabs" style={{ marginBottom: 0 }}>
             {(['all', 'critical', 'warning', 'info'] as const).map((sev) => (
               <button
@@ -54,34 +85,35 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
                   backgroundColor: severityFilter === sev ? 'var(--primary)' : 'var(--bg-input)',
                   color: severityFilter === sev ? '#FFF' : 'var(--text-secondary)',
                   border: '1px solid var(--border-color)',
+                  flexShrink: 0,
                 }}
               >
                 {sev === 'all'
-                  ? 'Toutes les alertes'
+                  ? 'Toutes'
                   : sev === 'critical'
-                  ? '🚨 Critiques'
+                  ? 'Critiques'
                   : sev === 'warning'
-                  ? '⚠️ Avertissements'
-                  : 'ℹ️ Informations'}
+                  ? 'Avertissements'
+                  : 'Infos'}
               </button>
             ))}
           </div>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+          <label className="filter-checkbox">
             <input
               type="checkbox"
               checked={showAcknowledged}
               onChange={(e) => setShowAcknowledged(e.target.checked)}
               style={{ width: '16px', height: '16px', accentColor: 'var(--primary)' }}
             />
-            <span>Afficher également les alertes déjà traitées / acquittées</span>
+            <span>Inclure les traitées</span>
           </label>
         </div>
       </div>
 
       {/* Alarms List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {filteredAlarms.length === 0 ? (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {paginatedItems.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
             <CheckCircle size={36} color="var(--success)" style={{ margin: '0 auto 12px' }} />
             <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '4px' }}>
@@ -92,12 +124,15 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
             </p>
           </div>
         ) : (
-          filteredAlarms.map((alarm) => (
+          paginatedItems.map((alarm) => {
+            const isExpanded = expandedId === alarm.id;
+            return (
             <div
               key={alarm.id}
               className="card alarm-item"
+              onClick={() => setExpandedId(isExpanded ? null : alarm.id)}
               style={{
-                padding: '16px 20px',
+                padding: '18px 20px',
                 borderLeft: `4px solid ${
                   alarm.severity === 'critical'
                     ? 'var(--danger)'
@@ -105,7 +140,8 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
                     ? 'var(--warning)'
                     : 'var(--primary)'
                 }`,
-                opacity: alarm.acknowledged ? 0.6 : 1,
+                opacity: alarm.acknowledged ? 0.7 : 1,
+                cursor: 'pointer',
               }}
             >
               <div className="alarm-item-main">
@@ -129,6 +165,7 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
                         : alarm.severity === 'warning'
                         ? 'var(--warning)'
                         : 'var(--primary)',
+                    flexShrink: 0,
                   }}
                 >
                   {alarm.severity === 'critical' ? (
@@ -141,42 +178,38 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
                 </div>
 
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px', flexWrap: 'wrap' }}>
-                    <h4 style={{ fontSize: '0.96rem', color: 'var(--text-primary)' }}>
-                      {alarm.title}
-                    </h4>
-                    <span
-                      style={{
-                        fontFamily: 'monospace',
-                        fontSize: '0.75rem',
-                        padding: '1px 6px',
-                        borderRadius: '4px',
-                        backgroundColor: 'var(--bg-input)',
-                        color: 'var(--accent-cyan)',
-                      }}
-                    >
-                      {alarm.vehiclePlate}
-                    </span>
+                  <div className="row-title" style={{ marginBottom: '4px' }}>
+                    {alarm.title}
                   </div>
-
-                  <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                    {alarm.description}
-                  </p>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.74rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <User size={12} />
-                      <span>{alarm.ownerName}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Clock size={12} />
-                      <span>{new Date(alarm.timestamp).toLocaleString('fr-FR')}</span>
-                    </div>
+                  <div className="row-subtitle">
+                    {alarm.vehiclePlate} · {new Date(alarm.timestamp).toLocaleString('fr-FR')}
                   </div>
+                  {isExpanded && (
+                    <div style={{ marginTop: '12px' }}>
+                      <p style={{ fontSize: '0.88rem', color: 'var(--text-primary)', lineHeight: 1.5, marginBottom: '10px' }}>
+                        {alarm.description}
+                      </p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.8rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <User size={13} />
+                          <span>{alarm.ownerName}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Clock size={13} />
+                          <span>{new Date(alarm.timestamp).toLocaleString('fr-FR')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
+                <ChevronDown
+                  size={18}
+                  className="row-chevron"
+                  style={{ transform: isExpanded ? 'rotate(180deg)' : undefined }}
+                />
               </div>
 
-              <div>
+              <div onClick={(e) => e.stopPropagation()}>
                 {alarm.acknowledged ? (
                   <span className="badge badge-success">
                     <CheckCircle size={12} />
@@ -186,17 +219,29 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
                   <button
                     onClick={() => onAcknowledgeAlarm(alarm.id)}
                     className="btn btn-secondary"
-                    style={{ fontSize: '0.78rem' }}
+                    style={{ fontSize: '0.82rem' }}
                   >
                     <CheckCircle size={14} color="var(--success)" />
-                    <span>Acquitter l’alerte</span>
+                    <span>Acquitter</span>
                   </button>
                 )}
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        from={from}
+        to={to}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
     </div>
   );
 };

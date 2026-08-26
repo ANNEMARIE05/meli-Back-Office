@@ -28,7 +28,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="modal-header-info" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div
               style={{
                 width: '36px',
@@ -39,58 +39,39 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'var(--warning)',
+                flexShrink: 0,
               }}
             >
               <KeyRound size={18} />
             </div>
-            <div>
-              <h3 style={{ fontSize: '1.05rem', color: 'var(--text-primary)' }}>
+            <div style={{ minWidth: 0 }}>
+              <h3>
                 Mot de passe réinitialisé
               </h3>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+              <p>
                 Compte : <strong>{userName}</strong>
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="btn-ghost btn-icon" style={{ border: 'none', cursor: 'pointer' }}>
+          <button onClick={onClose} className="btn-ghost btn-icon" style={{ border: 'none', cursor: 'pointer', flexShrink: 0 }}>
             <X size={18} />
           </button>
         </div>
 
-        <div className="modal-body" style={{ textAlign: 'center', padding: '24px 20px' }}>
+        <div className="modal-body" style={{ textAlign: 'center' }}>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
             Le nouveau mot de passe temporaire pour ce compte a été généré avec succès :
           </p>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '12px',
-              backgroundColor: 'var(--bg-input)',
-              padding: '12px 18px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-color)',
-              marginBottom: '16px',
-            }}
-          >
-            <span
-              style={{
-                fontFamily: 'monospace',
-                fontSize: '1.3rem',
-                fontWeight: 700,
-                color: 'var(--primary)',
-                letterSpacing: '0.08em',
-              }}
-            >
+          <div className="password-reveal">
+            <span className="password-code">
               {generatedPassword}
             </span>
             <button
               onClick={handleCopy}
               className="btn btn-secondary btn-icon"
               title="Copier le mot de passe"
-              style={{ height: '34px', width: '34px' }}
+              style={{ height: '34px', width: '34px', flexShrink: 0 }}
             >
               {copied ? <Check size={16} color="var(--success)" /> : <Copy size={16} />}
             </button>

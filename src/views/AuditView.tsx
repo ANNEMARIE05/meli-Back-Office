@@ -6,10 +6,12 @@ import {
   Car,
   Bell,
   Sliders,
-  Clock,
-  Laptop,
+  ChevronDown,
 } from 'lucide-react';
 import type { AuditLog } from '../services/types';
+import { Pagination } from '../components/Pagination';
+import { usePagination } from '../hooks/usePagination';
+import { RowDetails, DetailField } from '../components/RowDetails';
 
 interface AuditViewProps {
   logs: AuditLog[];
@@ -18,6 +20,8 @@ interface AuditViewProps {
 export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | AuditLog['category']>('all');
+  const [pageSize, setPageSize] = useState(5);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
@@ -33,18 +37,23 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
     });
   }, [logs, searchTerm, categoryFilter]);
 
+  const { paginatedItems, page, setPage, totalPages, totalItems, from, to } = usePagination(
+    filteredLogs,
+    pageSize
+  );
+
   const getCategoryBadge = (category: AuditLog['category']) => {
     switch (category) {
       case 'SECURITY':
-        return { label: 'Sécurité', color: 'var(--danger)', bg: 'var(--danger-light)', icon: Shield };
+        return { label: 'Sécurité', color: 'var(--danger)', icon: Shield };
       case 'USER':
-        return { label: 'Compte / Client', color: 'var(--primary)', bg: 'var(--primary-soft)', icon: User };
+        return { label: 'Compte / Client', color: 'var(--primary)', icon: User };
       case 'VEHICLE':
-        return { label: 'Véhicule & Balise', color: 'var(--success)', bg: 'var(--success-light)', icon: Car };
+        return { label: 'Véhicule & Balise', color: 'var(--success)', icon: Car };
       case 'ALARM':
-        return { label: 'Alerte Flotte', color: 'var(--warning)', bg: 'var(--warning-light)', icon: Bell };
+        return { label: 'Alerte Flotte', color: 'var(--warning)', icon: Bell };
       default:
-        return { label: 'Système', color: 'var(--text-secondary)', bg: 'var(--bg-input)', icon: Sliders };
+        return { label: 'Système', color: 'var(--text-secondary)', icon: Sliders };
     }
   };
 
@@ -61,14 +70,14 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
       </div>
 
       {/* Filter Bar */}
-      <div className="card" style={{ marginBottom: '20px', padding: '16px 20px' }}>
+      <div className="card filters-bar">
         <div className="grid-filters-2">
           <div className="input-with-icon">
             <Search size={16} />
             <input
               type="text"
               className="form-input"
-              placeholder="Rechercher dans l'historique (auteur, action, détails, IP)..."
+              placeholder="Auteur, action, détails, IP..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -95,95 +104,88 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
         <table className="data-table">
           <thead>
             <tr>
-              <th>Date & Heure</th>
-              <th>Catégorie</th>
-              <th>Action Réalisée</th>
-              <th>Détails de l'événement</th>
+              <th>Événement</th>
               <th>Auteur</th>
-              <th>Origine / IP</th>
+              <th>Catégorie</th>
             </tr>
           </thead>
           <tbody>
-            {filteredLogs.length === 0 ? (
+            {paginatedItems.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                <td colSpan={3} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                   Aucun événement d'audit ne correspond à vos critères.
                 </td>
               </tr>
             ) : (
-              filteredLogs.map((log) => {
+              paginatedItems.map((log) => {
                 const cat = getCategoryBadge(log.category);
                 const Icon = cat.icon;
+                const isExpanded = expandedId === log.id;
                 return (
-                  <tr key={log.id}>
-                    <td data-label="Date">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600 }}>
-                        <Clock size={13} color="var(--text-muted)" />
-                        <span>{new Date(log.timestamp).toLocaleString('fr-FR')}</span>
-                      </div>
-                    </td>
+                  <React.Fragment key={log.id}>
+                    <tr
+                      className={`data-row ${isExpanded ? 'is-expanded' : ''}`}
+                      onClick={() => setExpandedId(isExpanded ? null : log.id)}
+                    >
+                      <td data-label="Événement" className="card-title-cell">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div className="row-title">{log.action}</div>
+                            <div className="row-subtitle">
+                              {new Date(log.timestamp).toLocaleString('fr-FR')}
+                            </div>
+                          </div>
+                          <ChevronDown size={18} className="row-chevron" />
+                        </div>
+                      </td>
 
-                    <td data-label="Catégorie">
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px',
-                          padding: '3px 8px',
-                          borderRadius: 'var(--radius-sm)',
-                          backgroundColor: cat.bg,
-                          color: cat.color,
-                          fontSize: '0.74rem',
-                          fontWeight: 700,
-                        }}
-                      >
-                        <Icon size={12} />
-                        <span>{cat.label}</span>
-                      </span>
-                    </td>
+                      <td data-label="Auteur">{log.authorName}</td>
 
-                    <td data-label="Action">
-                      <span
-                        style={{
-                          fontFamily: 'monospace',
-                          fontSize: '0.78rem',
-                          fontWeight: 700,
-                          color: 'var(--text-primary)',
-                          backgroundColor: 'var(--bg-input)',
-                          padding: '2px 6px',
-                          borderRadius: 'var(--radius-sm)',
-                          wordBreak: 'break-all',
-                        }}
-                      >
-                        {log.action}
-                      </span>
-                    </td>
-
-                    <td data-label="Détails">
-                      <div style={{ fontSize: '0.84rem', color: 'var(--text-primary)' }}>
-                        {log.details}
-                      </div>
-                    </td>
-
-                    <td data-label="Auteur">
-                      <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                        {log.authorName}
-                      </div>
-                    </td>
-
-                    <td data-label="Origine">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.76rem', color: 'var(--text-muted)' }}>
-                        <Laptop size={12} />
-                        <span>{log.ipAddress}</span>
-                      </div>
-                    </td>
-                  </tr>
+                      <td data-label="Catégorie" className="col-status">
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            color: cat.color,
+                            fontSize: '0.82rem',
+                            fontWeight: 600,
+                          }}
+                        >
+                          <Icon size={14} />
+                          <span>{cat.label}</span>
+                        </span>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <RowDetails colSpan={3}>
+                        <DetailField label="Détails">{log.details}</DetailField>
+                        <DetailField label="Auteur">{log.authorName}</DetailField>
+                        <DetailField label="Catégorie">{cat.label}</DetailField>
+                        <DetailField label="Origine / IP">{log.ipAddress}</DetailField>
+                        <DetailField label="Date">
+                          {new Date(log.timestamp).toLocaleString('fr-FR')}
+                        </DetailField>
+                      </RowDetails>
+                    )}
+                  </React.Fragment>
                 );
               })
             )}
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        from={from}
+        to={to}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
     </div>
   );
 };

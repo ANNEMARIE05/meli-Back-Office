@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import {
-  Clock,
   Crosshair,
   Search,
 } from 'lucide-react';
@@ -235,7 +234,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         </div>
 
         {/* Vehicle list */}
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {filteredVehicles.map((v) => {
             const isSelected = selectedVehicle?.id === v.id;
             return (
@@ -243,18 +242,19 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 key={v.id}
                 onClick={() => onSelectVehicle(v)}
                 style={{
-                  padding: '12px 14px',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 16px',
+                  borderRadius: '12px',
                   backgroundColor: isSelected ? 'var(--bg-card-hover)' : 'var(--bg-input)',
                   border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-subtle)'}`,
                   cursor: 'pointer',
                   transition: 'all var(--transition-fast)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                    {v.plate}
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="row-title">{v.plate}</div>
+                    <div className="row-subtitle">{v.name} · {v.ownerName}</div>
+                  </div>
                   <span
                     className={`badge ${
                       v.status === 'online'
@@ -263,20 +263,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         ? 'badge-warning'
                         : 'badge-offline'
                     }`}
-                    style={{ fontSize: '0.65rem', padding: '2px 6px' }}
                   >
                     <span className="badge-dot" />
                     {v.status === 'online' ? `${v.speed} km/h` : v.status === 'stopped' ? 'Arrêt' : 'Hors-ligne'}
                   </span>
-                </div>
-
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                  {v.name} • {v.ownerName}
-                </div>
-
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Clock size={11} />
-                  <span>{v.address}</span>
                 </div>
               </div>
             );
@@ -293,7 +283,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--accent-cyan)' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--primary)' }}>
                 Télémétrie en direct
               </span>
               <button
@@ -305,33 +295,36 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.78rem' }}>
-              <div style={{ backgroundColor: 'var(--bg-input)', padding: '8px', borderRadius: 'var(--radius-sm)' }}>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem' }}>Contact Moteur</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.84rem' }}>
+              <div>
+                <div className="detail-field-label">Contact moteur</div>
                 <div style={{ fontWeight: 600, color: selectedVehicle.engineOn ? 'var(--success)' : 'var(--danger)' }}>
-                  {selectedVehicle.engineOn ? '🟢 Allumé (ON)' : '⚪ Coupé (OFF)'}
+                  {selectedVehicle.engineOn ? 'Allumé (ON)' : 'Coupé (OFF)'}
                 </div>
               </div>
 
-              <div style={{ backgroundColor: 'var(--bg-input)', padding: '8px', borderRadius: 'var(--radius-sm)' }}>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem' }}>Vitesse réelle</div>
+              <div>
+                <div className="detail-field-label">Vitesse</div>
                 <div style={{ fontWeight: 600, color: 'var(--primary)' }}>
                   {selectedVehicle.speed} km/h
                 </div>
               </div>
 
-              <div style={{ backgroundColor: 'var(--bg-input)', padding: '8px', borderRadius: 'var(--radius-sm)' }}>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem' }}>Batterie Traceur</div>
-                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {selectedVehicle.batteryLevel ?? 100}%
-                </div>
+              <div>
+                <div className="detail-field-label">Batterie</div>
+                <div style={{ fontWeight: 600 }}>{selectedVehicle.batteryLevel ?? 100}%</div>
               </div>
 
-              <div style={{ backgroundColor: 'var(--bg-input)', padding: '8px', borderRadius: 'var(--radius-sm)' }}>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem' }}>Réservoir</div>
-                <div style={{ fontWeight: 600, color: 'var(--warning)' }}>
-                  {selectedVehicle.fuelLevel ?? 80}%
-                </div>
+              <div>
+                <div className="detail-field-label">Carburant</div>
+                <div style={{ fontWeight: 600 }}>{selectedVehicle.fuelLevel ?? 80}%</div>
+              </div>
+            </div>
+            <div style={{ marginTop: '14px' }}>
+              <div className="detail-field-label">Position</div>
+              <div style={{ fontSize: '0.86rem', lineHeight: 1.45 }}>{selectedVehicle.address}</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                {selectedVehicle.lastUpdate}
               </div>
             </div>
           </div>

@@ -83,12 +83,17 @@ export const App: React.FC = () => {
   }, [theme]);
 
   useEffect(() => {
-    if (!isMobile) return;
-    document.body.style.overflow = isMobileSidebarOpen ? 'hidden' : '';
+    if (!isMobile) {
+      document.body.style.overflow = '';
+      return;
+    }
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
-  }, [isMobile, isMobileSidebarOpen]);
+  }, [isMobile]);
 
   // Load Data from API Service
   const loadData = useCallback(() => {
