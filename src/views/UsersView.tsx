@@ -88,9 +88,6 @@ export const UsersView: React.FC<UsersViewProps> = ({
             backgroundColor: roleFilter === 'all' ? 'var(--primary)' : 'var(--bg-card)',
             color: roleFilter === 'all' ? '#FFF' : 'var(--text-secondary)',
             border: '1px solid var(--border-color)',
-            fontSize: '0.84rem',
-            padding: '8px 16px',
-            flexShrink: 0,
           }}
         >
           Tous ({users.length})
@@ -103,12 +100,9 @@ export const UsersView: React.FC<UsersViewProps> = ({
             backgroundColor: roleFilter === 'OWNER' ? 'var(--primary)' : 'var(--bg-card)',
             color: roleFilter === 'OWNER' ? '#FFF' : 'var(--text-secondary)',
             border: '1px solid var(--border-color)',
-            fontSize: '0.84rem',
-            padding: '8px 16px',
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            flexShrink: 0,
           }}
         >
           <Building size={14} />
@@ -122,12 +116,9 @@ export const UsersView: React.FC<UsersViewProps> = ({
             backgroundColor: roleFilter === 'DRIVER' ? 'var(--primary)' : 'var(--bg-card)',
             color: roleFilter === 'DRIVER' ? '#FFF' : 'var(--text-secondary)',
             border: '1px solid var(--border-color)',
-            fontSize: '0.84rem',
-            padding: '8px 16px',
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            flexShrink: 0,
           }}
         >
           <Car size={14} />

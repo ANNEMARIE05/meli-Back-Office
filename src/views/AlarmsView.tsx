@@ -77,15 +77,13 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
             {(['all', 'critical', 'warning', 'info'] as const).map((sev) => (
               <button
                 key={sev}
+                type="button"
                 onClick={() => setSeverityFilter(sev)}
                 className="btn"
                 style={{
-                  padding: '6px 14px',
-                  fontSize: '0.8rem',
                   backgroundColor: severityFilter === sev ? 'var(--primary)' : 'var(--bg-input)',
                   color: severityFilter === sev ? '#FFF' : 'var(--text-secondary)',
                   border: '1px solid var(--border-color)',
-                  flexShrink: 0,
                 }}
               >
                 {sev === 'all'
@@ -112,7 +110,7 @@ export const AlarmsView: React.FC<AlarmsViewProps> = ({
       </div>
 
       {/* Alarms List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div className="alarm-list">
         {paginatedItems.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '24px 16px', color: 'var(--text-muted)' }}>
             <CheckCircle size={36} color="var(--success)" style={{ margin: '0 auto 12px' }} />

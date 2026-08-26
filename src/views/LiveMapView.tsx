@@ -4,6 +4,7 @@ import {
   Crosshair,
   Search,
 } from 'lucide-react';
+import { useIsMobile } from '../hooks/useIsMobile';
 import type { Vehicle } from '../services/types';
 
 interface LiveMapViewProps {
@@ -12,14 +13,69 @@ interface LiveMapViewProps {
   onSelectVehicle: (v: Vehicle | null) => void;
 }
 
+const TelemetryPanel: React.FC<{
+  vehicle: Vehicle;
+  onClose: () => void;
+  inline?: boolean;
+}> = ({ vehicle, onClose, inline = false }) => (
+  <div className={`live-map-telemetry ${inline ? 'is-inline' : ''}`}>
+    <div className="live-map-telemetry-head">
+      <span>Télémétrie en direct</span>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+        className="btn-ghost"
+      >
+        Fermer
+      </button>
+    </div>
+
+    <div className="live-map-telemetry-grid">
+      <div>
+        <div className="detail-field-label">Contact moteur</div>
+        <div style={{ fontWeight: 600, color: vehicle.engineOn ? 'var(--success)' : 'var(--danger)' }}>
+          {vehicle.engineOn ? 'Allumé (ON)' : 'Coupé (OFF)'}
+        </div>
+      </div>
+
+      <div>
+        <div className="detail-field-label">Vitesse</div>
+        <div style={{ fontWeight: 600, color: 'var(--primary)' }}>
+          {vehicle.speed} km/h
+        </div>
+      </div>
+
+      <div>
+        <div className="detail-field-label">Batterie</div>
+        <div style={{ fontWeight: 600 }}>{vehicle.batteryLevel ?? 100}%</div>
+      </div>
+
+      <div>
+        <div className="detail-field-label">Carburant</div>
+        <div style={{ fontWeight: 600 }}>{vehicle.fuelLevel ?? 80}%</div>
+      </div>
+    </div>
+    <div className="live-map-telemetry-position">
+      <div className="detail-field-label">Position</div>
+      <div className="live-map-telemetry-address">{vehicle.address}</div>
+      <div className="live-map-telemetry-update">{vehicle.lastUpdate}</div>
+    </div>
+  </div>
+);
+
 export const LiveMapView: React.FC<LiveMapViewProps> = ({
   vehicles,
   selectedVehicle,
   onSelectVehicle,
 }) => {
+  const isMobile = useIsMobile();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [id: number]: L.Marker }>({});
+  const selectedItemRef = useRef<HTMLDivElement | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'online' | 'stopped' | 'offline'>('all');
@@ -177,6 +233,24 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     map.fitBounds(bounds, { padding: [60, 60] });
   };
 
+  useEffect(() => {
+    if (!isMobile || !selectedVehicle) return;
+    const frame = window.requestAnimationFrame(() => {
+      const el = selectedItemRef.current;
+      if (!el) return;
+      const sidebar = el.closest('.live-map-sidebar');
+      const header = sidebar?.querySelector('.live-map-sidebar-header');
+      const headerHeight = header?.getBoundingClientRect().height ?? 0;
+      el.style.scrollMarginTop = `${headerHeight + 6}px`;
+      el.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [isMobile, selectedVehicle]);
+
   return (
     <div className="live-map-wrapper">
       {/* Left Sidebar: Vehicle List & Telemetry details */}
@@ -235,76 +309,49 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             return (
               <div
                 key={v.id}
-                className={`live-map-vehicle-item ${isSelected ? 'is-selected' : ''}`}
-                onClick={() => onSelectVehicle(v)}
+                ref={isSelected ? selectedItemRef : undefined}
+                className={`live-map-vehicle-block ${isSelected ? 'is-open' : ''}`}
               >
-                <div className="live-map-vehicle-row">
-                  <div style={{ minWidth: 0 }}>
-                    <div className="row-title">{v.plate}</div>
-                    <div className="row-subtitle">{v.name} · {v.ownerName}</div>
+                <div
+                  className={`live-map-vehicle-item ${isSelected ? 'is-selected' : ''}`}
+                  onClick={() => onSelectVehicle(isMobile && isSelected ? null : v)}
+                >
+                  <div className="live-map-vehicle-row">
+                    <div style={{ minWidth: 0 }}>
+                      <div className="row-title">{v.plate}</div>
+                      <div className="row-subtitle">{v.name} · {v.ownerName}</div>
+                    </div>
+                    <span
+                      className={`badge ${
+                        v.status === 'online'
+                          ? 'badge-success'
+                          : v.status === 'stopped'
+                          ? 'badge-warning'
+                          : 'badge-offline'
+                      }`}
+                    >
+                      <span className="badge-dot" />
+                      {v.status === 'online' ? `${v.speed} km/h` : v.status === 'stopped' ? 'Arrêt' : 'Hors-ligne'}
+                    </span>
                   </div>
-                  <span
-                    className={`badge ${
-                      v.status === 'online'
-                        ? 'badge-success'
-                        : v.status === 'stopped'
-                        ? 'badge-warning'
-                        : 'badge-offline'
-                    }`}
-                  >
-                    <span className="badge-dot" />
-                    {v.status === 'online' ? `${v.speed} km/h` : v.status === 'stopped' ? 'Arrêt' : 'Hors-ligne'}
-                  </span>
                 </div>
+                {isMobile && isSelected && selectedVehicle && (
+                  <TelemetryPanel
+                    vehicle={selectedVehicle}
+                    onClose={() => onSelectVehicle(null)}
+                    inline
+                  />
+                )}
               </div>
             );
           })}
         </div>
 
-        {selectedVehicle && (
-          <div className="live-map-telemetry">
-            <div className="live-map-telemetry-head">
-              <span>Télémétrie en direct</span>
-              <button
-                type="button"
-                onClick={() => onSelectVehicle(null)}
-                className="btn-ghost"
-              >
-                Fermer
-              </button>
-            </div>
-
-            <div className="live-map-telemetry-grid">
-              <div>
-                <div className="detail-field-label">Contact moteur</div>
-                <div style={{ fontWeight: 600, color: selectedVehicle.engineOn ? 'var(--success)' : 'var(--danger)' }}>
-                  {selectedVehicle.engineOn ? 'Allumé (ON)' : 'Coupé (OFF)'}
-                </div>
-              </div>
-
-              <div>
-                <div className="detail-field-label">Vitesse</div>
-                <div style={{ fontWeight: 600, color: 'var(--primary)' }}>
-                  {selectedVehicle.speed} km/h
-                </div>
-              </div>
-
-              <div>
-                <div className="detail-field-label">Batterie</div>
-                <div style={{ fontWeight: 600 }}>{selectedVehicle.batteryLevel ?? 100}%</div>
-              </div>
-
-              <div>
-                <div className="detail-field-label">Carburant</div>
-                <div style={{ fontWeight: 600 }}>{selectedVehicle.fuelLevel ?? 80}%</div>
-              </div>
-            </div>
-            <div className="live-map-telemetry-position">
-              <div className="detail-field-label">Position</div>
-              <div className="live-map-telemetry-address">{selectedVehicle.address}</div>
-              <div className="live-map-telemetry-update">{selectedVehicle.lastUpdate}</div>
-            </div>
-          </div>
+        {!isMobile && selectedVehicle && (
+          <TelemetryPanel
+            vehicle={selectedVehicle}
+            onClose={() => onSelectVehicle(null)}
+          />
         )}
       </div>
 
