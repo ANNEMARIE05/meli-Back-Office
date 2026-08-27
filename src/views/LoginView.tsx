@@ -54,7 +54,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         {/* Meli Logo & Subtitle */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
-            <MeliLogo size="lg" />
+            <MeliLogo size="xl" />
           </div>
           <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
             Portail d'Administration & Supervision Flotte
